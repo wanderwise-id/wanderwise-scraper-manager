@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "wanderwise-scraper-manager"
+version = "0.1.0"
+description = "wanderwise scraper manager"
+authors = ["wiratana <andikawiratana@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+mongoengine = "^0.27.0"
+beautifulsoup4 = "^4.12.2"
+requests = "^2.31.0"
+deep-translator = "^1.11.4"
+transformers = "^4.36.0"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0.post1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
