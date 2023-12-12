@@ -1,4 +1,12 @@
 from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
+from mongoengine import connect
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+def db_connect():
+    connect(db=os.environ.get("DB_NAME"), host=os.environ.get("DB_URI"))
 
 
 def summarization_model_init():
