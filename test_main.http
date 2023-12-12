@@ -19,3 +19,8 @@ GET http://127.0.0.1:8000/test-classification-model
 Accept: application/json
 
 ###
+
+GET http://127.0.0.1:8000/test-ner-model
+Accept: application/json
+
+###

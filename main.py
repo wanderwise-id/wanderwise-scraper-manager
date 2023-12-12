@@ -1,21 +1,25 @@
 from contextlib import asynccontextmanager
 from config.model_config import *
 from fastapi import FastAPI
+import numpy as np
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # initialize model
     global classifier
     global summarizer
+    global ner
 
     classifier = classification_model_init()
     summarizer = summarization_model_init()
+    ner = ner_model_init()
 
     yield
 
     # when shutdown
     del classifier
     del summarizer
+    del ner
 
 app = FastAPI(lifespan=lifespan)
 
@@ -45,6 +49,20 @@ async def test_model():
 async def test_model():
     text: str = "A 95 year old grandmother was raped by a 65 year old grandfather with the initials MH in Bekasi, West Java. This depraved act was discovered by the victims nephew with the initials R"
     outputs = classifier(text)
+
+    return {
+        "message": "successfuly classify",
+        "data": outputs
+    }
+
+
+@app.get("/test-ner-model")
+async def test_model():
+    text: str = "A 95 year old grandmother was raped by a 65 year old grandfather with the initials MH in Bekasi, West Java. This depraved act was discovered by the victims nephew with the initials R"
+    for entity in ner(text):
+        if entity['entity'].find("GPE") != -1:
+            outputs = entity['word']
+            break
 
     return {
         "message": "successfuly classify",
