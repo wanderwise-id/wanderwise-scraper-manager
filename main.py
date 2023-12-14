@@ -1,6 +1,8 @@
 import datetime
+import os
 from contextlib import asynccontextmanager
 
+import requests
 from google.cloud.firestore_v1 import FieldFilter
 
 from config.config import *
@@ -8,6 +10,7 @@ from fastapi import FastAPI
 from models.article import Article
 from scrapers.v1.detik_crime import DetikCrimeScraper
 from firebase_admin import firestore
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +34,7 @@ async def lifespan(app: FastAPI):
     # when shutdown
     del classifier, summarizer, ner
     del fb_app, fb_db
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -117,11 +121,12 @@ async def scraper():
         "message": "successfuly scrape"
     }
 
+
 @app.get("/firebase_test")
 async def firebase():
     cities = (fb_db.collection("cities")
-            .where(filter=FieldFilter("name", "==", "Badung"))
-            .get())
+              .where(filter=FieldFilter("name", "==", "Badung"))
+              .get())
 
     for city in cities:
         city_ref = fb_db.collection("cities").document(city.get("idCity"))
@@ -129,4 +134,16 @@ async def firebase():
 
     return {
         "message": "why are you gay"
+    }
+
+
+@app.get("/weather_test")
+async def weather():
+    response = requests.get(
+        "https://api.weatherapi.com/v1/current.json?q={location}&key={api_key}".format(location="Denpasar",
+                                                                                       api_key=os.environ.get(
+                                                                                           "WEATHER_API_KEY")))
+    print(response.content)
+    return {
+        "message": "you are very gay"
     }
