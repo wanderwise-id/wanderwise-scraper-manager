@@ -7,5 +7,6 @@ class Article(Document):
     link_to_origin = StringField(require=True)
     category = StringField(required=True)
     date_published = DateTimeField(required=True)
-    location = StringField(required=True)
+    location = ListField(StringField(required=True))
     timezone = StringField(required=True)
+    image = DictField(required=True)

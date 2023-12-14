@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from config.model_config import *
 from fastapi import FastAPI
 from models.article import Article
-from deep_translator import GoogleTranslator
 from scrapers.v1.detik_crime import DetikCrimeScraper
 
 @asynccontextmanager
@@ -19,9 +18,6 @@ async def lifespan(app: FastAPI):
 
     # connect to db
     db_connect()
-
-    # translator
-    id_to_en = translator = GoogleTranslator(source='id', target='en')
 
     yield
 
@@ -110,3 +106,7 @@ async def test_model():
 async def scraper():
     scraper = DetikCrimeScraper()
     scraper.run()
+
+    return {
+        "message": "successfuly scrape"
+    }

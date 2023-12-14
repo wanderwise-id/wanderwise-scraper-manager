@@ -10,11 +10,11 @@ def db_connect():
 
 
 def summarization_model_init():
-    return pipeline('summarization', model="arthd24/wanderwise_summary_1")
+    return pipeline('summarization', model="arthd24/wanderwise_summary_1", framework="tf")
 
 
 def classification_model_init():
-    return pipeline("text-classification", model="arthd24/wanderwise_classification_1")
+    return pipeline("text-classification", model="arthd24/wanderwise_classification_1",  framework="tf")
 
 
 def ner_model_init():
