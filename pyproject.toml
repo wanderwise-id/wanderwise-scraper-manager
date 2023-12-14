@@ -19,6 +19,7 @@ tensorflow = {version = "2.15.0", python = ">=3.10,<3.11"}
 python-dotenv = "^1.0.0"
 lxml = "^4.9.3"
 geonamescache = "^2.0.0"
+firebase-admin = "^6.3.0"
 
 
 [build-system]

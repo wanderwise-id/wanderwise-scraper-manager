@@ -1,9 +1,13 @@
 import datetime
 from contextlib import asynccontextmanager
-from config.model_config import *
+
+from google.cloud.firestore_v1 import FieldFilter
+
+from config.config import *
 from fastapi import FastAPI
 from models.article import Article
 from scrapers.v1.detik_crime import DetikCrimeScraper
+from firebase_admin import firestore
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -11,10 +15,13 @@ async def lifespan(app: FastAPI):
     global classifier
     global summarizer
     global ner
+    global fb_app
+    global fb_db
 
     classifier = classification_model_init()
     summarizer = summarization_model_init()
     ner = ner_model_init()
+    fb_app, fb_db = firebase_init()
 
     # connect to db
     db_connect()
@@ -22,9 +29,8 @@ async def lifespan(app: FastAPI):
     yield
 
     # when shutdown
-    del classifier
-    del summarizer
-    del ner
+    del classifier, summarizer, ner
+    del fb_app, fb_db
 
 app = FastAPI(lifespan=lifespan)
 
@@ -109,4 +115,18 @@ async def scraper():
 
     return {
         "message": "successfuly scrape"
+    }
+
+@app.get("/firebase_test")
+async def firebase():
+    cities = (fb_db.collection("cities")
+            .where(filter=FieldFilter("name", "==", "Badung"))
+            .get())
+
+    for city in cities:
+        city_ref = fb_db.collection("cities").document(city.get("idCity"))
+        city_ref.collection("news").add({"name": "blablabla"})
+
+    return {
+        "message": "why are you gay"
     }

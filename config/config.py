@@ -1,12 +1,25 @@
-from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
+from transformers import pipeline
 from mongoengine import connect
 from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 import os
 
 load_dotenv()
 
 def db_connect():
     connect(db=os.environ.get("DB_NAME"), host=os.environ.get("DB_URI"))
+
+def firebase_init():
+    # Use a service account.
+    cred = credentials.Certificate(os.environ.get("SERVICE_ACCOUNT_KEY"))
+
+    app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    return app, db
 
 
 def summarization_model_init():
