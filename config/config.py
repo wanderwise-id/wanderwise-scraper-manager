@@ -2,8 +2,6 @@ from transformers import pipeline
 from mongoengine import connect
 from dotenv import load_dotenv
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
 import os
 
 load_dotenv()
@@ -13,13 +11,13 @@ def db_connect():
 
 def firebase_init():
     # Use a service account.
-    cred = credentials.Certificate(os.environ.get("SERVICE_ACCOUNT_KEY"))
+    cred = firebase_admin.credentials.Certificate(os.environ.get("SERVICE_ACCOUNT_KEY"))
 
-    app = firebase_admin.initialize_app(cred)
+    app = firebase_admin.initialize_app(cred, {
+        'databaseURL': os.environ.get("FIREBASE_URL")
+    })
 
-    db = firestore.client()
-
-    return app, db
+    return app
 
 
 def summarization_model_init():

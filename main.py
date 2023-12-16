@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from models.article import Article
 from scrapers.v1.detik_crime import DetikCrimeScraper
 from firebase_admin import firestore
+from firebase_admin import db
 
 
 @asynccontextmanager
@@ -19,21 +20,20 @@ async def lifespan(app: FastAPI):
     global summarizer
     global ner
     global fb_app
-    global fb_db
 
     classifier = classification_model_init()
     summarizer = summarization_model_init()
     ner = ner_model_init()
-    fb_app, fb_db = firebase_init()
+    fb_app = firebase_init()
 
     # connect to db
-    db_connect()
+    # db_connect()
 
     yield
 
     # when shutdown
     del classifier, summarizer, ner
-    del fb_app, fb_db
+    del fb_app
 
 
 app = FastAPI(lifespan=lifespan)
@@ -124,13 +124,19 @@ async def scraper():
 
 @app.get("/firebase_test")
 async def firebase():
-    cities = (fb_db.collection("cities")
-              .where(filter=FieldFilter("name", "==", "Badung"))
-              .get())
+    # firestore code
+    # cities = (fb_db.collection("cities")
+    #           .where(filter=FieldFilter("name", "==", "Badung"))
+    #           .get())
+    #
+    # for city in cities:
+    #     city_ref = fb_db.collection("cities").document(city.get("idCity"))
+    #     city_ref.collection("news").add({"name": "blablabla"})
 
-    for city in cities:
-        city_ref = fb_db.collection("cities").document(city.get("idCity"))
-        city_ref.collection("news").add({"name": "blablabla"})
+    ref = db.reference("/cities")
+    print(ref.get())
+    ref = db.reference("/cities/Denpasar")
+    print(ref.get())
 
     return {
         "message": "why are you gay"

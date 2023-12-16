@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 import os
 import json
 import main
+from firebase_admin import db
 from firebase_admin import firestore
 
 load_dotenv()
@@ -24,16 +25,16 @@ class DetikCrimeScraper():
     name = "detik-crime-scraper"
 
     def run(self):
+        print("hello")
         summarizer = Summarizer()
         classifier = Classifier()
         ner = NER()
         translator = GoogleTranslator(source='id', target='en')
-        setting = ScraperSetting.objects(name=self.name).first()
+        setting = db.reference("/settings/{name}".format(name=self.name)).get()
+        #setting = ScraperSetting.objects(name=self.name).first()
 
-        if setting is None:
-            return
-
-        if not setting.status:
+        if not setting['status']:
+            print("disable service")
             return
 
         try:
@@ -76,28 +77,22 @@ class DetikCrimeScraper():
                     if not locations:
                         continue
 
+                    print(locations)
                     for location in locations:
                         # mongodb code : check is city available
                         # if City.objects(name=location).count() > 0:
+                        city = db.reference("/cities/{location}".format(location=location)).get()
 
-                        cities = (main.fb_db
-                                  .collection("cities")
-                                  .where(filter=FieldFilter("name", "==", location))
-                                  .get())
-
-                        if not cities:
+                        if not city:
                             print("doesn't have collection of cities")
                             continue
 
-                        collection_of_news = []
-
-                        for city in cities:
-                            collection_of_news = (main.fb_db.collection("cities")
-                                                  .document(city.get("idCity"))
-                                                  .collection("news")
-                                                  .where(filter=FieldFilter("link_to_origin", "==", article.a["href"]))
-                                                  .get())
-                            print("collection of news : ", collection_of_news)
+                        collection_of_news = (db.reference("/news")
+                                              .child(location)
+                                              .order_by_child("link_to_origin")
+                                              .equal_to(article.a["href"])
+                                              .get())
+                        print("collection of news : ", collection_of_news)
 
                         if collection_of_news:
                             break
@@ -146,18 +141,20 @@ class DetikCrimeScraper():
                             "summarize": summarize,
                             "link_to_origin": article.a["href"],
                             "category": category,
-                            "date_published": date,
+                            "date_published": str(date),
                             "location": locations,
                             "timezone": timezone,
                             "image": image
                         }
+                        print(article_dict)
                         # mongodb code : unpack dictionary and save data
                         # article_obj = Article(**article_dict)
                         # article_obj.save()
-                        print(article_dict)
-                        for city in cities:
-                            city_ref = main.fb_db.collection("cities").document(city.get("idCity"))
-                            city_ref.collection("news").add(article_dict)
+                        # print(article_dict)
+                        # for city in cities:
+                        #     city_ref = main.fb_db.collection("cities").document(city.get("idCity"))
+                        #     city_ref.collection("news").add(article_dict)
+                        (db.reference("news").child(location).push(article_dict))
                         break
                 except Exception as e:
                     print("sub article : ", e)
