@@ -1,9 +1,4 @@
 from time import sleep
-
-from google.cloud.firestore_v1 import FieldFilter
-from models.scraper_setting import ScraperSetting
-from models.article import Article
-from models.city import City
 from helper.summarizer import Summarizer
 from helper.classifier import Classifier
 from helper.ner import NER
@@ -14,9 +9,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 import json
-import main
 from firebase_admin import db
-from firebase_admin import firestore
 
 load_dotenv()
 
@@ -31,7 +24,6 @@ class DetikCrimeScraper():
         ner = NER()
         translator = GoogleTranslator(source='id', target='en')
         setting = db.reference("/settings/{name}".format(name=self.name)).get()
-        #setting = ScraperSetting.objects(name=self.name).first()
 
         if not setting['status']:
             print("disable service")
@@ -44,10 +36,6 @@ class DetikCrimeScraper():
             article_list = soup.find_all('article', class_='list-content__item')
 
             for article in article_list:
-                # mongodb code : check amount of article
-                # identical_article_amount = Article.objects(link_to_origin=article.a["href"]).count()
-                # if identical_article_amount > 0:
-                #     break
 
                 try:
                     html_content = requests.get(article.a["href"])
@@ -79,8 +67,6 @@ class DetikCrimeScraper():
 
                     print(locations)
                     for location in locations:
-                        # mongodb code : check is city available
-                        # if City.objects(name=location).count() > 0:
                         city = db.reference("/cities/{location}".format(location=location)).get()
 
                         if not city:
@@ -147,13 +133,6 @@ class DetikCrimeScraper():
                             "image": image
                         }
                         print(article_dict)
-                        # mongodb code : unpack dictionary and save data
-                        # article_obj = Article(**article_dict)
-                        # article_obj.save()
-                        # print(article_dict)
-                        # for city in cities:
-                        #     city_ref = main.fb_db.collection("cities").document(city.get("idCity"))
-                        #     city_ref.collection("news").add(article_dict)
                         (db.reference("news").child(location).push(article_dict))
                         break
                 except Exception as e:

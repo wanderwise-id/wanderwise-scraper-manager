@@ -1,15 +1,9 @@
 import datetime
-import os
 from contextlib import asynccontextmanager
-
 import requests
-from google.cloud.firestore_v1 import FieldFilter
-
 from config.config import *
 from fastapi import FastAPI
-from models.article import Article
 from scrapers.v1.detik_crime import DetikCrimeScraper
-from firebase_admin import firestore
 from firebase_admin import db
 
 
@@ -25,9 +19,6 @@ async def lifespan(app: FastAPI):
     summarizer = summarization_model_init()
     ner = ner_model_init()
     fb_app = firebase_init()
-
-    # connect to db
-    # db_connect()
 
     yield
 
@@ -103,8 +94,6 @@ async def test_model():
             article["location"] = entity['word']
             break
     print(article)
-    article = Article(**article)
-    article.save()
 
     return {
         "message": "successfuly classify",
