@@ -5,7 +5,7 @@ from config.config import *
 from fastapi import FastAPI
 from scrapers.v1.detik_crime import DetikCrimeScraper
 from firebase_admin import db
-
+from functions.v1.score_updater import score_updater
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -142,3 +142,7 @@ async def weather():
     return {
         "message": "you are very gay"
     }
+
+@app.get("/score_updater")
+async def my_score_updater():
+    score_updater()
