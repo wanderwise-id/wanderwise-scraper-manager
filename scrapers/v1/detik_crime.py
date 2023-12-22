@@ -30,7 +30,7 @@ class DetikCrimeScraper():
             return
 
         try:
-            html_content = requests.get('https://www.detik.com/bali/hukum-kriminal/indeks/1')
+            html_content = requests.get('https://www.detik.com/bali/hukum-kriminal/indeks/4')
             soup = BeautifulSoup(html_content.content, 'lxml')
 
             article_list = soup.find_all('article', class_='list-content__item')
@@ -67,7 +67,7 @@ class DetikCrimeScraper():
 
                     print(locations)
                     for location in locations:
-                        city = db.reference("/cities/{location}".format(location=location)).get()
+                        city = db.reference("/cities/{location}".format(location=location.replace("#", ""))).get()
 
                         if not city:
                             print("doesn't have collection of cities")
@@ -128,12 +128,12 @@ class DetikCrimeScraper():
                             "link_to_origin": article.a["href"],
                             "category": category,
                             "date_published": str(date),
-                            "location": locations,
+                            "location": location,
                             "timezone": timezone,
                             "image": image
                         }
                         print(article_dict)
-                        (db.reference("news").child(location).push(article_dict))
+                        (db.reference("news").child(location).child("Crime").push(article_dict))
                         break
                 except Exception as e:
                     print("sub article : ", e)
